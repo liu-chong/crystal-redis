@@ -1327,17 +1327,30 @@ describe Redis do
   end
 
   describe "async list" do
-    redis = Redis.new
-
-    spawn {
-      loop {
-        sleep (rand(10) + 1).milliseconds
-        redis.lpush("mylist", rand.to_s)
-      }
+    push_data = ->(redis : Redis) {
+      data = { "rand" => rand.to_s }
+      data["check"] = data["rand"]
+      redis.lpush("myjsonlist", data.to_json)
     }
 
+    spawn do
+      redis = Redis.new
+      loop do
+        push_data.call(redis)
+        sleep (rand(10) + 1).milliseconds
+      end
+    end
+
     it "async read list" do
-      99999.times { redis.lindex("list", 0) }
+      redis = Redis.new
+      push_data.call(redis)
+      9999.times {
+        raw = redis.lindex("myjsonlist", 0)
+        raw.should be_a String
+        data = JSON.parse(raw.not_nil!)
+        data["check"].should eq data["rand"]
+      }
+      redis.del("myjsonlist")
     end
   end
 end
