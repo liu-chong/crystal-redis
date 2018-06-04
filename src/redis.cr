@@ -223,6 +223,18 @@ class Redis
   def close
     @connection.close
   end
+
+  def reconnect
+    close
+
+    uri = URI.parse @url.not_nil!
+
+    @connection = Connection.new(uri.host.not_nil!, uri.port, uri.port ? nil : uri.host)
+    @strategy = Redis::Strategy::SingleStatement.new(@connection) 
+
+    uri.password.try { |password| auth(password) }
+    uri.path.try { |path| self.select(path[1..-1]) }
+  end
 end
 
 require "./**"
