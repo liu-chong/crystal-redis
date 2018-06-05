@@ -1367,7 +1367,7 @@ describe Redis do
     it "reconnect" do
       redis.reconnect
 
-      redis.get("keeeey").should eq 1
+      redis.get("keeeey").should eq "1"
     end
   end
 end
