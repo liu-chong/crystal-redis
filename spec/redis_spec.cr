@@ -1331,4 +1331,15 @@ describe Redis do
       redis.get("foo").should eq(large_value)
     end
   end
+
+  describe "reconnect" do
+    redis = Redis.new
+    redis.set("keeeey", 1)
+
+    it "reconnect" do
+      redis.reconnect
+
+      redis.get("keeeey").should eq 1
+    end
+  end
 end
